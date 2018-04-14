@@ -1,10 +1,8 @@
-/*
-  配置信息
- */
+//配置信息
 const config = {
-  token: 'atguiguHTML1208',
-  appID: 'wxc8e92f7ab70fbca0',
-  appsecret: 'b4054e90b75787c78e0af50bf7fc3e87'
-}
+    token: 'myumoWANG1634',
+    appID: 'wx566163e38e5a7cad',
+    appsecret: '091f191920cfbaadc82fbb28d8aac11b'
+};
 
-module.exports = config
+module.exports = config;

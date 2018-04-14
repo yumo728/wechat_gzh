@@ -1,7 +1,7 @@
 const express = require('express')
+const app = express()
 const config = require('./config/config')
 const confirm = require('./wechat/confirm')
-const app = express()
 
 app.use(confirm(config))
 
