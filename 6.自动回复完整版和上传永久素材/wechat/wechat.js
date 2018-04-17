@@ -1,6 +1,7 @@
 const rp = require('request-promise');
 const tools = require('../utils/tools');
-
+const api = require('../utils/api')
+const fs = require('fs')
 /*
   创建Wechat构造函数，用来生成access_token，全局唯一凭据
     我们调用微信的接口，必须携带上access_token参数
@@ -68,7 +69,7 @@ function wechat(options){
         }, err => {
             console.log(err)
         })*/
-    return this.fetchAccessToken();
+    this.fetchAccessToken();
 }
 //取得access_token的方法
 wechat.prototype.fetchAccessToken = function () {
@@ -139,8 +140,10 @@ wechat.prototype.saveAccessToken= function (data) {
 
 //获取access_token的方法
 wechat.prototype.updateAccessToken= function () {
-    const url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
-        +this.appID+'&secret='+this.appsecret
+    // const url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
+    //     +this.appID+'&secret='+this.appsecret
+    const url = api.accessToken + '&appid='
+        + this.appID + '&secret=' + this.appsecret
 
     /*request
     request-promise*/
@@ -165,5 +168,91 @@ wechat.prototype.updateAccessToken= function () {
             })
     })
 };
+
+//上传素材
+wechat.prototype.uploadMaterial = function (type, material, permanent) {
+    /*
+      type: 上传素材的类型
+        material: 上传素材的路径/news素材
+        permanent: 永久素材接口
+     */
+    /*
+      * 临时素材
+            * 一种接口
+                * 上传4种素材类型
+                  *    image  voice video thumb
+            * 请求url必须写type
+        * 永久素材
+            * 三种接口
+                * news 没有type
+                    * 只有它需要通过请求体上传素材
+                * 图片url 没有type
+                * 其他素材类型 有type
+   */
+    let form = {}
+
+    //初始化：临时上传的素材接口
+    let uploadApi = api.temporary.upload
+
+    if (permanent) {
+        //如果传了permanent，说明永久上传其他素材接口
+        uploadApi = api.permanent.addMaterial
+    }
+
+    if (type === 'img') {
+        //说明永久上传图文url素材接口
+        uploadApi = api.permanent.uploadImg
+    }
+
+    if (type === 'news') {
+        //说明永久上传图文素材接口
+        uploadApi = api.permanent.addNews
+        form = material
+    } else {
+        form = {
+            media: fs.createReadStream(material)
+        }
+    }
+    // const form = {
+    //     media: fs.createReadStream(material)
+    // }
+
+    return new Promise((resolve, reject) => {
+        this.fetchAccessToken()
+            .then(res => {
+                /*const url = api.upload + 'access_token=' + res.access_token +'&type=' + type
+
+                rp({method: 'POST', url: url, formData: form, json: true})
+                    .then(res => {
+                        resolve(res)
+                    }, err => {
+                        reject(err)
+                    })
+            })*/
+                let url = uploadApi + 'access_token=' + res.access_token
+
+                if (type !== 'news' && type !== 'img') {
+                    url += '&type=' + type
+                }
+
+                let options = {method: 'POST', url: url, json: true}
+
+                if (type === 'news') {
+                    options.body = form
+                } else {
+                    options.formData = form
+                }
+
+                rp(options)
+                    .then(res => {
+                        resolve(res)
+                    }, err => {
+                        reject(err)
+                    })
+            })
+    })
+
+}
+
 
 module.exports = wechat;

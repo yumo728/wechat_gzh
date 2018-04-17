@@ -1,6 +1,7 @@
 const rp = require('request-promise');
 const tools = require('../utils/tools');
-
+const api = require('../utils/api')
+const fs = require('fs')
 /*
   创建Wechat构造函数，用来生成access_token，全局唯一凭据
     我们调用微信的接口，必须携带上access_token参数
@@ -68,7 +69,7 @@ function wechat(options){
         }, err => {
             console.log(err)
         })*/
-    return this.fetchAccessToken();
+    this.fetchAccessToken();
 }
 //取得access_token的方法
 wechat.prototype.fetchAccessToken = function () {
@@ -139,8 +140,10 @@ wechat.prototype.saveAccessToken= function (data) {
 
 //获取access_token的方法
 wechat.prototype.updateAccessToken= function () {
-    const url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
-        +this.appID+'&secret='+this.appsecret
+    // const url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
+    //     +this.appID+'&secret='+this.appsecret
+    const url = api.accessToken + '&appid='
+        + this.appID + '&secret=' + this.appsecret
 
     /*request
     request-promise*/
@@ -165,5 +168,32 @@ wechat.prototype.updateAccessToken= function () {
             })
     })
 };
+
+//上传素材
+wechat.prototype.uploadMaterial = function (type, path) {
+    /*
+      type: 上传素材的类型
+      path: 上传素材的路径
+     */
+    const form = {
+        media: fs.createReadStream(path)
+    }
+
+    return new Promise((resolve, reject) => {
+        this.fetchAccessToken()
+            .then(res => {
+                const url = api.upload + 'access_token=' + res.access_token +'&type=' + type
+
+                rp({method: 'POST', url: url, formData: form, json: true})
+                    .then(res => {
+                        resolve(res)
+                    }, err => {
+                        reject(err)
+                    })
+            })
+    })
+
+}
+
 
 module.exports = wechat;

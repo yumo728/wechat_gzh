@@ -1,6 +1,6 @@
 //处理验证服务器有效性的逻辑
 const sha1 = require('sha1');
-const Wechat = require('./wechat');
+// const Wechat = require('./wechat');
 const tools = require('../utils/tools')
 const reply = require('./reply')
 /*
@@ -22,7 +22,7 @@ const reply = require('./reply')
 
 //验证服务器的有效性
 module.exports = function (config) {
-    new Wechat(config);
+    // new Wechat(config);
 
      return async (req,res)=> {
         // console.log(req.query)  下面的对象
@@ -151,35 +151,14 @@ module.exports = function (config) {
                     2、开发者回复了异常数据，比如JSON数据、xml数据中有多余空格等
                     3、xml数据中content为空
              */
-             /*let replyMessage = ''
-
-             if (message.MsgType === 'text') {
-                 //说明用户发送text文本消息
-                 if (message.Content === '0') {
-                     replyMessage = '即将转取您银行卡的7000元 \n回复1 确认转取 \n回复2 取消转取 \n回复哈哈 笑死你~~~'
-                 } else if (message.Content === '1') {
-                     replyMessage = '确认转取~~~'
-                 } else if (message.Content.match(2)) {
-                     replyMessage = '你上当了，转取成功了~~~'
-                 }else if (message.Content.match('哈哈')) {
-                     replyMessage = '笑死你~~~笑死你'
-                 }
-             }
-
-             replyMessage = '<xml> ' +
-                 '<ToUserName><![CDATA[' + message.FromUserName + ']]></ToUserName> ' +
-                 '<FromUserName><![CDATA[' + message.ToUserName + ']]></FromUserName> ' +
-                 '<CreateTime>' + Date.now() + '</CreateTime> ' +
-                 '<MsgType><![CDATA[text]]></MsgType> ' +
-                 '<Content><![CDATA[' + replyMessage + ']]></Content> ' +
-                 '</xml>'*/
 
              /*
                 封装模块：
                     封装成一个回复xml数据的模块  tpl.js
                     封装一个回复用户的消息模块  teply.js
              */
-             const replyMessage = reply(message)
+             const replyMessage = await reply(message)
+             console.log(replyMessage)
 
              res.send(replyMessage)
          }

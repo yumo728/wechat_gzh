@@ -4,6 +4,6 @@ const confirm = require('./wechat/confirm');
 const app = express();
 
 app.use(confirm(config));
-app.listen(3000,function () {
+app.listen(3000, ()=> {
     console.log('服务器启动成功了')
 });
